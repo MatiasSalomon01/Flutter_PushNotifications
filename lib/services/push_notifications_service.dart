@@ -3,21 +3,27 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:async';
 
 class PushNotificationService{
   static FirebaseMessaging messaging = FirebaseMessaging.instance;
   static String? token;
+  static StreamController<String> _messageStream = StreamController.broadcast();
+  static Stream<String> get messageStream => _messageStream.stream;
 
   static Future _backgroundHandler(RemoteMessage message)async{
-    print('_backgroundHandler ${message.messageId}');
+    // print('_backgroundHandler ${message.messageId}');
+    _messageStream.add(message.notification?.title ?? '');
   }
 
   static Future _onMessageHandler(RemoteMessage message)async{
-    print('_onMessageHandler ${message.messageId}');
+    // print('_onMessageHandler ${message.messageId}');
+    _messageStream.add(message.notification?.title ?? '');
   }
 
   static Future _onMessageOpenApp(RemoteMessage message)async{
-    print('_onMessageOpenApp ${message.messageId}');
+    // print('_onMessageOpenApp ${message.messageId}');
+    _messageStream.add(message.notification?.title ?? '');
   }
 
   static Future initializeApp()async{
@@ -33,5 +39,9 @@ class PushNotificationService{
     FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpenApp);
 
     //Local Notifications
+  }
+
+  static closeStreams()async{
+    _messageStream.close();
   }
 }
